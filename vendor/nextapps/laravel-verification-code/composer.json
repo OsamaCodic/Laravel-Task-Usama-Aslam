@@ -1,0 +1,72 @@
+{
+    "name": "nextapps/laravel-verification-code",
+    "description": "A simple way to authenticate a user using a verification code.",
+    "keywords": [
+        "nextapps",
+        "laravel",
+        "authentication",
+        "verification"
+    ],
+    "homepage": "https://github.com/nextapps-be/laravel-verification-code",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Evert Arnould",
+            "email": "evert@nextapps.be",
+            "role": "Developer"
+        },
+        {
+            "name": "Günther Debrauwer",
+            "email": "gunther@nextapps.be",
+            "role": "Developer"
+        },
+        {
+            "name": "Philippe Damen",
+            "email": "philippe@nextapps.be",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.3|^7.4|^8.0|^8.1",
+        "illuminate/database": "^7.0|^8.0|^9.0",
+        "illuminate/notifications": "^7.0|^8.0|^9.0",
+        "illuminate/support": "^7.0|^8.0|^9.0"
+    },
+    "require-dev": {
+        "adamwojs/php-cs-fixer-phpdoc-force-fqcn": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "orchestra/testbench": "^5.0|^6.0|^7.0",
+        "phpunit/phpunit": "^9.1",
+        "squizlabs/php_codesniffer": "^3.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "NextApps\\VerificationCode\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NextApps\\VerificationCode\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "lint": "vendor/bin/php-cs-fixer fix && vendor/bin/phpcs --colors --report-full",
+        "lint-dry": "vendor/bin/php-cs-fixer fix --dry-run && vendor/bin/phpcs --colors --report-full"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "NextApps\\VerificationCode\\VerificationCodeServiceProvider"
+            ],
+            "aliases": {
+                "VerificationCode": "NextApps\\VerificationCode\\VerificationCode"
+            }
+        }
+    }
+}
