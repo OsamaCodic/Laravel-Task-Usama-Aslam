@@ -19,8 +19,8 @@ class UsersTableSeeder extends Seeder
         DB::table('users')->insert([
             'first_name' => 'Usama',
             'last_name' => 'Aslam',
-            'role' => 'Admin',
             'email' => 'programmer@brand786.com',
+            'email_verified_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'password' => \Hash::make('Brand1234#'),
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
@@ -29,8 +29,8 @@ class UsersTableSeeder extends Seeder
         DB::table('users')->insert([
             'first_name' => 'sheerazabbas',
             'last_name' => 'Testing',
-            'role' => 'Admin',
             'email' => 'sheerazabbas@brand786.com',
+            'email_verified_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'password' => \Hash::make('Brand1234#'),
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s')

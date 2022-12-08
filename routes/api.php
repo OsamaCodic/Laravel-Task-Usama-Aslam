@@ -13,11 +13,6 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::get('test_code_deployment', function ()
-{
-    return "yes code is deploying";
-});
-
 Route::post('register', [\App\Http\Controllers\Api\AuthController::class,'register']);
 Route::post('login', [\App\Http\Controllers\Api\AuthController::class,'login']);
 
@@ -43,25 +38,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () {
     Route::middleware([isVerified::class])->group(function(){
         //Only verified email accounts can access these routes
-        
         Route::resource('todos', UserTodoController::class);
         Route::post('logout', 'AuthController@logout');
-
-        /**for todo crud use api routes like this
-            for read
-            http://127.0.0.1:8000/api/todos (method: GET)
-            
-            for create
-            http://127.0.0.1:8000/api/todos (method: POST)
-            
-            for update
-            http://127.0.0.1:8000/api/todos (method: POST) // pass id input
-
-            for show
-            http://127.0.0.1:8000/api/todos/3 (method: GET)
-
-            for delete
-            http://127.0.0.1:8000/api/todos/3 (method: DELETE)
-        **/
     });
 });

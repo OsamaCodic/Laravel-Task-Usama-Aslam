@@ -17,7 +17,6 @@ class AuthController extends Controller
             $validator = \Validator::make($request->all(), [
                 'first_name' => 'required|string',
                 'last_name' => 'required|string',
-                'role' => 'required|string',
                 'email' => 'required|string|unique:users,email',
                 'password' => 'required|min:6|max:25|confirmed',
             ]);
@@ -74,23 +73,14 @@ class AuthController extends Controller
             ], 401);
         }
 
-        if($user->role == 'Staff') {
-            return response([
-                'message' => 'Only Admin can access admin panel.'
-            ], 401);
-        }
-
         if(!$user->hasVerifiedEmail()) {
             return response()->json(["message" => "Your account is inactive. Email verification link sent on your email id please verify your account first."]);
         }
 
         $token = $user->createToken('myapptoken')->plainTextToken;
 
-        $logged_user_role = $user->role;
-
         $response = [
             'user' => $user,
-            'userRole' => $logged_user_role,
             'token' => $token
         ];
 
@@ -102,7 +92,8 @@ class AuthController extends Controller
         auth()->user()->tokens()->delete();
         
         return [
-            'message' => 'Tokens Revoked'
+            'token' => 'Tokens Revoked',
+            'message' => 'User is logout.'
         ];
     }
 
@@ -135,6 +126,20 @@ class AuthController extends Controller
     
     public function verifyCode(Request $request) {
 
+        $validator = \Validator::make($request->all(), [
+            'email' => 'required|email',
+            'code' => 'required',
+        ]);
+        
+        if ($validator->fails()) {
+            return $validator->messages();
+        }
+
+        $user = User::whereEmail($request->email)->first();
+        if($user->hasVerifiedEmail()) {
+            return response()->json(["message" => "Your account is already active."]);
+        }
+
         $status = VerificationCode::verify($request->code, $request->email);
 
         if ($status) {
@@ -147,6 +152,15 @@ class AuthController extends Controller
     }
 
     public function resendVerificationCode(Request $request) {
+        
+        $validator = \Validator::make($request->all(), [
+            'email' => 'required|string|email',
+        ]);
+        
+        if ($validator->fails()) {
+            return $validator->messages();
+        }
+
         VerificationCode::send($request->email);
         return response()->json(["message" => "Email verification code resent on your email id"]);
     }
