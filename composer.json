@@ -12,6 +12,7 @@
         "laravel/sanctum": "^2.15",
         "laravel/tinker": "^2.5",
         "nextapps/laravel-verification-code": "^1.2",
+        "php-open-source-saver/jwt-auth": "^2.0",
         "protonemedia/laravel-verify-new-email": "^1.6",
         "rap2hpoutre/laravel-log-viewer": "^2.2"
     },

@@ -26,6 +26,7 @@ class UserTodoController extends Controller
             $todos= $query->where('user_id', Auth::user()->id)->orderBy('display_order')->paginate(@$_GET['per_page'] ? $_GET['per_page'] : 10);
             
             return response([
+                "Total Records" => $todos->count(),
                 "todos" => $todos
             ],200);
 
@@ -150,6 +151,8 @@ class UserTodoController extends Controller
     public function destroy($id)
     {
         UserTodo::findorfail($id)->delete();
-        return "User task deleted successfully!";
+        return response([
+            'message' => "User task deleted successfully."
+        ], 401);
     }
 }

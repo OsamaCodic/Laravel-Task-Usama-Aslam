@@ -25,20 +25,18 @@ Route::post('login', [\App\Http\Controllers\Api\AuthController::class,'login']);
 /**********  Verify via Code **********/
 //submit email & code fields for verfication
 Route::post('email/verify_code', [\App\Http\Controllers\Api\AuthController::class,'verifyCode']);
-
-
 //If user accidently delete email
-//send email only
 Route::post('email/resend/verify_code', [\App\Http\Controllers\Api\AuthController::class,'resendVerificationCode']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware('auth:api')->get('/user', function (Request $request) {
     return auth()->user();
 });
 
-Route::group(['middleware' => 'auth:sanctum','namespace' => 'Api'], function () {
+Route::group(['middleware' => 'auth:api','namespace' => 'Api'], function () {
     Route::middleware([isVerified::class])->group(function(){
         //Only verified email accounts can access these routes
         Route::resource('todos', UserTodoController::class);
         Route::post('logout', 'AuthController@logout');
     });
+    Route::post('refresh', 'AuthController@refresh');
 });

@@ -7,58 +7,35 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Config;
+use Auth;
 use NextApps\VerificationCode\VerificationCode;
 
 class AuthController extends Controller
 {
-    public function register(Request $request) {
-        try {
-
-            $validator = \Validator::make($request->all(), [
-                'first_name' => 'required|string',
-                'last_name' => 'required|string',
-                'email' => 'required|string|unique:users,email',
-                'password' => 'required|min:6|max:25|confirmed',
-            ]);
-            
-            if ($validator->fails()) {
-                return $validator->messages();
-            }
-            
-            //Store Hash Password
-            $request->merge([
-                'password' => Hash::make($request->password)
-            ]);
-            
-            //verify via code
-            $user =  User::create($request->all());
-            VerificationCode::send($user->email);
-
-            //verify via link
-            // $user =  User::create($request->all())->sendEmailVerificationNotification();
-            
-            return response([
-                "success" => true,
-                "message" => 'User register succesfully, please verify your account.',
-                'user' => $user,
-            ],200);
-
-        } catch (\Exception $e) {
-            return response([
-                "error"=>$e->getMessage()
-            ],500);
-        }
-
+    public function __construct()
+    {
+        $this->middleware('auth:api', 
+            [
+                'except' => [
+                    'login',
+                    'register', 
+                    'verifyCode',
+                    'resendVerificationCode'
+                ]
+            ]
+        );
     }
 
-    public function login(Request $request) {
-
-        $fields = $request->validate([
-            'email' => 'required|string',
-            'password' => 'required|string'
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
         ]);
+   
+        $credentials = $request->only('email', 'password');
 
-        $user = User::where('email', $fields['email'])->first();
+        $user = User::where('email', $credentials['email'])->first();
         if(!$user)
         {
             return response([
@@ -67,34 +44,92 @@ class AuthController extends Controller
         }
 
         // Check password
-        if( !Hash::check($fields['password'], $user->password)) {
+        if( !Hash::check($credentials['password'], $user->password)) {
             return response([
                 'message' => "You'r password is wrong, Please enter correct password."
             ], 401);
         }
 
+        // Check verification
         if(!$user->hasVerifiedEmail()) {
             return response()->json(["message" => "Your account is inactive. Email verification link sent on your email id please verify your account first."]);
         }
 
-        $token = $user->createToken('myapptoken')->plainTextToken;
+        $token = Auth::attempt($credentials);
+        if (!$token) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized',
+            ], 401);
+        }
 
-        $response = [
+        $user = Auth::user();
+        return response()->json([
+            'status' => 'success',
             'user' => $user,
-            'token' => $token
-        ];
-
-        return response($response, 201);
+            'authorization' => [
+                'token' => $token,
+                'type' => 'bearer',
+            ]
+        ]);
     }
-    
+
+    public function register(Request $request){
+        $validator = \Validator::make($request->all(), [
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'email' => 'required|string|unique:users,email',
+            'password' => 'required|min:6|max:25|confirmed',
+        ]);
+        
+        if ($validator->fails()) {
+            return $validator->messages();
+        }
+        
+        //Store Hash Password
+        $request->merge([
+            'password' => Hash::make($request->password)
+        ]);
+
+        $user =  User::create($request->all());
+        
+        //verify via code
+        VerificationCode::send($user->email);
+
+        //verify via link
+        // $user =  User::create($request->all())->sendEmailVerificationNotification();
+
+        $token = Auth::login($user);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User created successfully',
+            'user' => $user,
+            'authorization' => [
+                'token' => $token,
+                'type' => 'bearer',
+            ]
+        ]);
+    }
+
     public function logout()
     {
-        auth()->user()->tokens()->delete();
-        
-        return [
-            'token' => 'Tokens Revoked',
-            'message' => 'User is logout.'
-        ];
+        Auth::logout();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Successfully logged out',
+        ]);
+    }
+
+    public function refresh()
+    {
+        return response()->json([
+            'status' => 'success',
+            'user' => Auth::user(),
+            'authorisation' => [
+                'token' => Auth::refresh(),
+                'type' => 'bearer',
+            ]
+        ]);
     }
 
     //Verification via link
@@ -123,7 +158,7 @@ class AuthController extends Controller
         //     return response()->json(["msg" => "Email verification link sent on your email id"]);
         // }
     // verification via link
-    
+
     public function verifyCode(Request $request) {
 
         $validator = \Validator::make($request->all(), [
